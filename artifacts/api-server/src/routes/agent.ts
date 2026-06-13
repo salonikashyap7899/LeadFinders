@@ -3,9 +3,13 @@ import OpenAI from "openai";
 
 const router = Router();
 
-const openai = new OpenAI({
-  apiKey: process.env["OPENAI_API_KEY"],
-});
+function getOpenAI(): OpenAI {
+  const apiKey = process.env["OPENAI_API_KEY"];
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set. Add it in the Secrets tab to enable LeadBot.");
+  }
+  return new OpenAI({ apiKey });
+}
 
 const SYSTEM_PROMPT = `You are LeadBot, an expert AI assistant embedded inside Lead → Launch — a lead generation tool for web developers and freelancers.
 
@@ -82,7 +86,7 @@ router.post("/", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
 
   try {
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       max_completion_tokens: 1024,
       stream: true,

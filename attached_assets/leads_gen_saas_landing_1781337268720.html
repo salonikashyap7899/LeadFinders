@@ -1,0 +1,578 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; }
+
+  :root {
+    --bg: #0A0B14;
+    --bg2: #12142A;
+    --bg3: #1A1D35;
+    --accent: #6C63FF;
+    --accent2: #A78BFA;
+    --accent-glow: rgba(108,99,255,0.18);
+    --green: #34D399;
+    --green-dim: rgba(52,211,153,0.12);
+    --text: #F4F4FF;
+    --muted: #8B8BAD;
+    --border: rgba(108,99,255,0.2);
+    --border2: rgba(255,255,255,0.07);
+    --card: rgba(255,255,255,0.04);
+    --radius: 14px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  .root {
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 0.5px solid var(--border2);
+    position: sticky;
+    top: 0;
+    background: rgba(10,11,20,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 17px; font-weight: 600; letter-spacing: -0.3px; color: var(--text);
+  }
+  .logo-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 16px; height: 16px; fill: white; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    font-size: 13.5px; color: var(--muted); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent);
+    color: white; border: none; border-radius: 9px;
+    padding: 9px 20px; font-size: 13.5px; font-weight: 500;
+    cursor: pointer; font-family: var(--font);
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 90px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(108,99,255,0.22) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(108,99,255,0.12);
+    border: 0.5px solid rgba(108,99,255,0.4);
+    border-radius: 100px; padding: 5px 14px;
+    font-size: 12px; color: var(--accent2); font-weight: 500;
+    margin-bottom: 28px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    font-size: 52px; font-weight: 700; line-height: 1.08;
+    letter-spacing: -2px; color: var(--text);
+    max-width: 700px; margin: 0 auto 22px;
+  }
+  h1 span { color: var(--accent2); }
+  .hero-sub {
+    font-size: 17px; color: var(--muted); max-width: 460px;
+    margin: 0 auto 38px; line-height: 1.65;
+  }
+  .hero-cta {
+    display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--accent); color: white; border: none;
+    border-radius: 11px; padding: 13px 28px; font-size: 15px; font-weight: 500;
+    cursor: pointer; font-family: var(--font); transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .btn-primary:hover { opacity: 0.87; }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 0.5px solid var(--border2); border-radius: 11px;
+    padding: 13px 24px; font-size: 15px; font-family: var(--font);
+    cursor: pointer; transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .hero-trust {
+    margin-top: 52px; color: var(--muted); font-size: 12.5px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .trust-avatars { display: flex; }
+  .trust-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--bg); margin-left: -8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+  }
+  .trust-avatar:first-child { margin-left: 0; }
+  .ta1 { background: #6C63FF; color: white; }
+  .ta2 { background: #34D399; color: #0A0B14; }
+  .ta3 { background: #F59E0B; color: #0A0B14; }
+  .ta4 { background: #EC4899; color: white; }
+
+  /* ── DASHBOARD MOCKUP ── */
+  .mockup-wrap {
+    margin: 0 40px 60px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .mockup-bar {
+    background: var(--bg3);
+    padding: 12px 18px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 0.5px solid var(--border2);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .d-red { background: #FF5F57; }
+  .d-yellow { background: #FFBC2E; }
+  .d-green { background: #28C840; }
+  .url-bar {
+    flex: 1; background: rgba(255,255,255,0.05); border-radius: 6px;
+    padding: 5px 12px; font-size: 11.5px; color: var(--muted);
+    margin-left: 6px;
+  }
+  .mockup-body {
+    display: grid; grid-template-columns: 200px 1fr;
+    min-height: 340px;
+  }
+  .sidebar {
+    background: rgba(255,255,255,0.02);
+    border-right: 0.5px solid var(--border2);
+    padding: 20px 12px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: 8px;
+    font-size: 12.5px; color: var(--muted); margin-bottom: 2px;
+    cursor: pointer;
+  }
+  .sidebar-item.active {
+    background: var(--accent-glow); color: var(--accent2);
+  }
+  .sidebar-item i { font-size: 15px; }
+  .sidebar-section {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.8px;
+    text-transform: uppercase; padding: 12px 10px 6px;
+  }
+  .main-panel { padding: 20px 22px; }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .panel-title { font-size: 15px; font-weight: 600; }
+  .panel-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .mini-btn {
+    background: var(--accent); color: white; border: none;
+    border-radius: 7px; padding: 7px 14px; font-size: 11.5px;
+    cursor: pointer; font-family: var(--font); font-weight: 500;
+  }
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-bottom: 18px;
+  }
+  .stat-card {
+    background: var(--card); border: 0.5px solid var(--border2);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .stat-label { font-size: 10.5px; color: var(--muted); margin-bottom: 6px; }
+  .stat-val { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .stat-change {
+    font-size: 10px; margin-top: 3px;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .up { color: var(--green); }
+  .leads-table { width: 100%; border-collapse: collapse; }
+  .leads-table th {
+    font-size: 10.5px; color: var(--muted); text-align: left;
+    padding: 6px 8px; border-bottom: 0.5px solid var(--border2); font-weight: 500;
+  }
+  .leads-table td {
+    font-size: 11.5px; padding: 8px 8px; border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  }
+  .lead-name { font-weight: 500; }
+  .lead-co { color: var(--muted); font-size: 10.5px; }
+  .status-pill {
+    padding: 3px 9px; border-radius: 100px; font-size: 10px; font-weight: 500;
+  }
+  .s-hot { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+  .s-warm { background: rgba(245,158,11,0.15); color: #FCD34D; }
+  .s-cold { background: rgba(99,102,241,0.15); color: #A5B4FC; }
+  .s-qual { background: var(--green-dim); color: #6EE7B7; }
+
+  /* ── FEATURES ── */
+  .section { padding: 70px 40px; }
+  .section-eyebrow {
+    font-size: 12px; font-weight: 500; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--accent2); margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 36px; font-weight: 700; letter-spacing: -1.2px;
+    line-height: 1.15; max-width: 520px; margin-bottom: 16px;
+  }
+  .section-sub { font-size: 16px; color: var(--muted); max-width: 440px; line-height: 1.65; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin-top: 44px;
+  }
+  .feat-card {
+    background: var(--card); border: 0.5px solid var(--border2);
+    border-radius: var(--radius); padding: 24px 22px;
+    transition: border-color 0.2s;
+  }
+  .feat-card:hover { border-color: rgba(108,99,255,0.4); }
+  .feat-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--accent-glow); border: 0.5px solid rgba(108,99,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .feat-icon i { font-size: 18px; color: var(--accent2); }
+  .feat-title { font-size: 14.5px; font-weight: 600; margin-bottom: 8px; }
+  .feat-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── METRICS STRIP ── */
+  .metrics { 
+    border-top: 0.5px solid var(--border2);
+    border-bottom: 0.5px solid var(--border2);
+    padding: 44px 40px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 24px; text-align: center;
+  }
+  .metric-val { font-size: 38px; font-weight: 700; letter-spacing: -1.5px; }
+  .metric-val span { color: var(--accent2); }
+  .metric-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 44px;
+  }
+  .price-card {
+    background: var(--card); border: 0.5px solid var(--border2);
+    border-radius: var(--radius); padding: 28px 26px;
+  }
+  .price-card.featured {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.08);
+    position: relative;
+  }
+  .popular-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: white; border-radius: 100px;
+    font-size: 11px; font-weight: 600; padding: 4px 14px; white-space: nowrap;
+  }
+  .plan-name { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .plan-price { font-size: 36px; font-weight: 700; letter-spacing: -1.5px; }
+  .plan-price sup { font-size: 18px; font-weight: 400; color: var(--muted); }
+  .plan-price sub { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .plan-desc { font-size: 13px; color: var(--muted); margin: 10px 0 22px; line-height: 1.5; }
+  .plan-divider { border: none; border-top: 0.5px solid var(--border2); margin: 18px 0; }
+  .plan-feature {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 13px; color: var(--muted); margin-bottom: 10px; line-height: 1.4;
+  }
+  .plan-feature i { color: var(--green); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .plan-btn {
+    width: 100%; padding: 11px; border-radius: 9px; border: 0.5px solid var(--border2);
+    background: transparent; color: var(--muted); font-size: 13.5px;
+    font-family: var(--font); cursor: pointer; margin-top: 22px; font-weight: 500;
+    transition: all 0.2s;
+  }
+  .plan-btn:hover { border-color: var(--accent); color: var(--accent2); }
+  .plan-btn.p-primary {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .plan-btn.p-primary:hover { opacity: 0.87; }
+
+  /* ── CTA FOOTER ── */
+  .cta-section {
+    text-align: center; padding: 80px 40px;
+    border-top: 0.5px solid var(--border2);
+    position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: ''; position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%);
+    width: 500px; height: 300px;
+    background: radial-gradient(ellipse, rgba(108,99,255,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section h2 { margin: 0 auto 16px; max-width: 480px; font-size: 38px; }
+  .cta-section p { color: var(--muted); font-size: 16px; margin-bottom: 36px; }
+  .footer-bar {
+    padding: 18px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 0.5px solid var(--border2);
+  }
+  .footer-bar p { font-size: 12.5px; color: var(--muted); }
+</style>
+
+<div class="root">
+  <h2 class="sr-only" style="position:absolute;left:-9999px">LeadFlow — AI-powered leads generation SaaS landing page</h2>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 16 16"><path d="M8 1L2 4v5c0 3.3 2.5 5.8 6 7 3.5-1.2 6-3.7 6-7V4L8 1zm-1 9.4L5 8.4l1.1-1.1 1.9 1.9 3.9-3.9L13 6.4 7 10.4z"/></svg>
+      </div>
+      LeadFlow
+    </div>
+    <div class="nav-links">
+      <a href="#">Features</a>
+      <a href="#">Integrations</a>
+      <a href="#">Pricing</a>
+      <a href="#">Blog</a>
+    </div>
+    <button class="nav-cta">Start free trial</button>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge"><span class="badge-dot"></span> Now with AI lead scoring v2.0</div>
+    <h1>Turn cold data into <span>warm revenue</span></h1>
+    <p class="hero-sub">LeadFlow identifies, qualifies, and prioritizes your best prospects — automatically. Close more deals with less guesswork.</p>
+    <div class="hero-cta">
+      <button class="btn-primary">
+        Get started free
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+      </button>
+      <button class="btn-ghost">See how it works →</button>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-avatars">
+        <div class="trust-avatar ta1">JK</div>
+        <div class="trust-avatar ta2">AL</div>
+        <div class="trust-avatar ta3">RM</div>
+        <div class="trust-avatar ta4">SP</div>
+      </div>
+      Trusted by 4,200+ sales teams worldwide
+    </div>
+  </div>
+
+  <!-- DASHBOARD MOCKUP -->
+  <div class="mockup-wrap">
+    <div class="mockup-bar">
+      <div class="dot d-red"></div><div class="dot d-yellow"></div><div class="dot d-green"></div>
+      <div class="url-bar">app.leadflow.io/dashboard</div>
+    </div>
+    <div class="mockup-body">
+      <div class="sidebar">
+        <div class="sidebar-section">Workspace</div>
+        <div class="sidebar-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+        <div class="sidebar-item"><i class="ti ti-users"></i> Leads</div>
+        <div class="sidebar-item"><i class="ti ti-mail"></i> Sequences</div>
+        <div class="sidebar-item"><i class="ti ti-chart-bar"></i> Analytics</div>
+        <div class="sidebar-section">Tools</div>
+        <div class="sidebar-item"><i class="ti ti-plug"></i> Integrations</div>
+        <div class="sidebar-item"><i class="ti ti-settings"></i> Settings</div>
+      </div>
+      <div class="main-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Lead Pipeline</div>
+            <div class="panel-sub">Updated 2 minutes ago · Q4 2025</div>
+          </div>
+          <button class="mini-btn">+ Add leads</button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total leads</div>
+            <div class="stat-val">2,847</div>
+            <div class="stat-change up"><i class="ti ti-trending-up" style="font-size:11px"></i> +18% this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Conversion rate</div>
+            <div class="stat-val">24.6%</div>
+            <div class="stat-change up"><i class="ti ti-trending-up" style="font-size:11px"></i> +3.2% vs last mo.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Revenue pipeline</div>
+            <div class="stat-val">$184k</div>
+            <div class="stat-change up"><i class="ti ti-trending-up" style="font-size:11px"></i> +41% this quarter</div>
+          </div>
+        </div>
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Source</th><th>Score</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="lead-name">Sarah Chen</div><div class="lead-co">Notion · VP Sales</div></td>
+              <td style="color:var(--muted);font-size:11px">LinkedIn</td>
+              <td><span style="color:var(--green);font-weight:600">94</span></td>
+              <td><span class="status-pill s-hot">Hot</span></td>
+            </tr>
+            <tr>
+              <td><div class="lead-name">Marcus Webb</div><div class="lead-co">Stripe · Head of GTM</div></td>
+              <td style="color:var(--muted);font-size:11px">Organic</td>
+              <td><span style="color:#FCD34D;font-weight:600">78</span></td>
+              <td><span class="status-pill s-warm">Warm</span></td>
+            </tr>
+            <tr>
+              <td><div class="lead-name">Priya Nair</div><div class="lead-co">Figma · AE Lead</div></td>
+              <td style="color:var(--muted);font-size:11px">Referral</td>
+              <td><span style="color:#A5B4FC;font-weight:600">61</span></td>
+              <td><span class="status-pill s-qual">Qualified</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div>
+      <div class="metric-val">4.2<span>k+</span></div>
+      <div class="metric-label">Sales teams</div>
+    </div>
+    <div>
+      <div class="metric-val">98<span>M</span></div>
+      <div class="metric-label">Leads processed</div>
+    </div>
+    <div>
+      <div class="metric-val">3.1<span>x</span></div>
+      <div class="metric-label">Avg pipeline lift</div>
+    </div>
+    <div>
+      <div class="metric-val">99<span>.9%</span></div>
+      <div class="metric-label">Platform uptime</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section">
+    <div class="section-eyebrow">Why LeadFlow</div>
+    <h2>Everything your pipeline needs</h2>
+    <p class="section-sub">From cold contact to closed deal — built for modern revenue teams who move fast.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-brain" aria-hidden="true"></i></div>
+        <div class="feat-title">AI lead scoring</div>
+        <div class="feat-desc">Our model ranks every lead by close probability using 40+ behavioral signals in real time.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-mail-forward" aria-hidden="true"></i></div>
+        <div class="feat-title">Smart sequences</div>
+        <div class="feat-desc">Personalized multi-channel outreach that auto-adapts based on how leads engage.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-database-import" aria-hidden="true"></i></div>
+        <div class="feat-title">Data enrichment</div>
+        <div class="feat-desc">Fill gaps instantly — company size, tech stack, funding, and intent signals sourced live.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-plug" aria-hidden="true"></i></div>
+        <div class="feat-title">120+ integrations</div>
+        <div class="feat-desc">Connect your CRM, inbox, Slack, and outreach tools in minutes — no engineers needed.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
+        <div class="feat-title">Pipeline analytics</div>
+        <div class="feat-desc">Spot leaks, forecast accurately, and understand which sources drive real revenue.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-shield-check" aria-hidden="true"></i></div>
+        <div class="feat-title">GDPR compliant</div>
+        <div class="feat-desc">Enterprise-grade security, SOC 2 Type II certified. Your data stays yours.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section" style="background: var(--bg2); border-top: 0.5px solid var(--border2); border-bottom: 0.5px solid var(--border2);">
+    <div style="text-align:center">
+      <div class="section-eyebrow" style="text-align:center">Pricing</div>
+      <h2 style="margin: 0 auto 14px; text-align:center; max-width:400px">Simple pricing, powerful results</h2>
+      <p class="section-sub" style="margin: 0 auto; text-align:center">No seat limits. No surprise fees. Cancel any time.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><sup>$</sup>49<sub>/mo</sub></div>
+        <div class="plan-desc">Perfect for solo closers and small teams getting started with prospecting.</div>
+        <hr class="plan-divider">
+        <div class="plan-feature"><i class="ti ti-check"></i>500 leads / month</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>AI scoring (basic)</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>Email sequences</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>10 integrations</div>
+        <button class="plan-btn">Get started</button>
+      </div>
+      <div class="price-card featured">
+        <div class="popular-badge">Most popular</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price"><sup>$</sup>149<sub>/mo</sub></div>
+        <div class="plan-desc">For growing teams that need full automation and deep enrichment data.</div>
+        <hr class="plan-divider">
+        <div class="plan-feature"><i class="ti ti-check"></i>5,000 leads / month</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>AI scoring + signals</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>Multi-channel sequences</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>Full data enrichment</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>60+ integrations</div>
+        <button class="plan-btn p-primary">Start free trial</button>
+      </div>
+      <div class="price-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:28px;letter-spacing:-0.5px">Custom</div>
+        <div class="plan-desc">For revenue orgs that need custom volume, SSO, and dedicated support.</div>
+        <hr class="plan-divider">
+        <div class="plan-feature"><i class="ti ti-check"></i>Unlimited leads</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>Custom AI models</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>SSO + audit logs</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>Dedicated CSM</div>
+        <div class="plan-feature"><i class="ti ti-check"></i>SLA guarantee</div>
+        <button class="plan-btn">Talk to sales</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Your next 100 deals start here</h2>
+    <p>Join 4,200+ teams already filling their pipeline with LeadFlow.</p>
+    <button class="btn-primary" style="margin: 0 auto; display: inline-flex;">
+      Start free — no card needed
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+    </button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <div class="logo" style="font-size:14px">
+      <div class="logo-icon" style="width:22px;height:22px;border-radius:6px">
+        <svg viewBox="0 0 16 16" style="width:11px;height:11px;fill:white"><path d="M8 1L2 4v5c0 3.3 2.5 5.8 6 7 3.5-1.2 6-3.7 6-7V4L8 1zm-1 9.4L5 8.4l1.1-1.1 1.9 1.9 3.9-3.9L13 6.4 7 10.4z"/></svg>
+      </div>
+      LeadFlow
+    </div>
+    <p>© 2026 LeadFlow Inc. · Privacy · Terms</p>
+  </div>
+</div>

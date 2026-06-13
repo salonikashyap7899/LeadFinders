@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Zap, Menu, X } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 
 export function Navbar({ dark = false }: { dark?: boolean }) {
   const { pathname } = useLocation();
@@ -9,19 +9,29 @@ export function Navbar({ dark = false }: { dark?: boolean }) {
   const linkClass = (path: string) =>
     `text-sm font-medium transition-colors ${
       pathname === path
-        ? dark ? "text-white" : "text-primary"
-        : dark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
+        ? "text-[#A78BFA]"
+        : "text-[#8B8BAD] hover:text-[#F4F4FF]"
     }`;
 
   return (
-    <header className={`sticky top-0 z-40 border-b ${dark ? "bg-slate-900/90 border-slate-800 backdrop-blur" : "bg-white/90 border-slate-200 backdrop-blur"}`}>
+    <header
+      className="sticky top-0 z-40"
+      style={{
+        background: "rgba(10,11,20,0.92)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "0.5px solid rgba(255,255,255,0.07)",
+      }}
+    >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-600/30 group-hover:shadow-indigo-600/50 transition-shadow">
+          <div
+            className="h-8 w-8 rounded-lg flex items-center justify-center shadow-md"
+            style={{ background: "#6C63FF" }}
+          >
             <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
           </div>
-          <span className={`text-lg font-bold tracking-tight ${dark ? "text-white" : "text-slate-900"}`}>
-            Lead<span className="text-indigo-500">→</span>Launch
+          <span className="text-lg font-bold tracking-tight text-[#F4F4FF]">
+            Lead<span style={{ color: "#A78BFA" }}>→</span>Launch
           </span>
         </Link>
 
@@ -34,7 +44,8 @@ export function Navbar({ dark = false }: { dark?: boolean }) {
         <div className="hidden md:flex items-center gap-3">
           <Link
             to="/app"
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm shadow-indigo-600/25"
+            className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-85"
+            style={{ background: "#6C63FF" }}
           >
             <Zap className="h-3.5 w-3.5" />
             Start Free
@@ -42,7 +53,7 @@ export function Navbar({ dark = false }: { dark?: boolean }) {
         </div>
 
         <button
-          className={`md:hidden ${dark ? "text-slate-300" : "text-slate-600"}`}
+          className="md:hidden text-[#8B8BAD] hover:text-[#F4F4FF] transition-colors"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
@@ -51,13 +62,17 @@ export function Navbar({ dark = false }: { dark?: boolean }) {
       </div>
 
       {open && (
-        <div className={`md:hidden border-t px-6 py-4 flex flex-col gap-4 ${dark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
+        <div
+          className="md:hidden px-6 py-4 flex flex-col gap-4"
+          style={{ background: "#12142A", borderTop: "0.5px solid rgba(255,255,255,0.07)" }}
+        >
           <Link to="/" className={linkClass("/")} onClick={() => setOpen(false)}>Home</Link>
           <Link to="/how-it-works" className={linkClass("/how-it-works")} onClick={() => setOpen(false)}>How It Works</Link>
           <Link to="/app" className={linkClass("/app")} onClick={() => setOpen(false)}>Launch Tool</Link>
           <Link
             to="/app"
-            className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+            className="inline-flex items-center justify-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+            style={{ background: "#6C63FF" }}
             onClick={() => setOpen(false)}
           >
             <Zap className="h-3.5 w-3.5" /> Start Free
