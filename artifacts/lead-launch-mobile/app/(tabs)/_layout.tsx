@@ -24,6 +24,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "list.bullet", selected: "list.bullet" }} />
         <Label>Leads</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="build">
+        <Icon sf={{ default: "sparkles", selected: "sparkles" }} />
+        <Label>Build</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="outreach">
         <Icon sf={{ default: "paperplane", selected: "paperplane.fill" }} />
         <Label>Outreach</Label>
@@ -93,6 +97,19 @@ function ClassicTabLayout() {
               <SymbolView name="list.bullet" tintColor={color} size={22} />
             ) : (
               <Feather name="list" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="build"
+        options={{
+          title: "Build",
+          headerShown: false,
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="sparkles" tintColor={color} size={22} />
+            ) : (
+              <Feather name="zap" size={20} color={color} />
             ),
         }}
       />
