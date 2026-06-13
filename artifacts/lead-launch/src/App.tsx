@@ -6,6 +6,7 @@ import { Phase2Audit } from "@/components/Phase2Audit";
 import { Phase3Rank } from "@/components/Phase3Rank";
 import { Phase4Build } from "@/components/Phase4Build";
 import { Phase5Outreach } from "@/components/Phase5Outreach";
+import { AgentPanel } from "@/components/AgentPanel";
 import { scoreLead } from "@/lib/scoring";
 import type { Lead, AuditResult } from "@/lib/types";
 import { Zap, ChevronLeft } from "lucide-react";
@@ -111,6 +112,7 @@ export default function App() {
         {phase === 5 && <Phase5Outreach key="p5" selected={selectedRanked} onPrev={() => setPhase(4)} />}
       </main>
 
+      <AgentPanel phase={phase} leadsCount={leads.length} selectedLead={selectedRanked} />
       <Toaster position="bottom-right" richColors />
     </>
   );
