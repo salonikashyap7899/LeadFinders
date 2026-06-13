@@ -1,36 +1,51 @@
-# [Project name]
+# Lead → Launch
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A full-stack lead generation tool for web developers and agencies. Find local businesses worldwide that need a website, audit their web presence, rank prospects by conversion score, generate a website prompt, and draft outreach — all in one 5-step pipeline.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/lead-launch run dev` — run the frontend (port auto-assigned)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
+- Frontend: React + Vite, Tailwind CSS v4, shadcn/ui, Sonner toasts, Leaflet map
+- API: Express 5 (artifacts/api-server)
+- Data: OpenStreetMap via Overpass API (free, worldwide) + optional Apify Google Maps
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/lead-launch/src/` — React frontend
+  - `components/Phase1Scrape.tsx` — worldwide business search via OSM
+  - `components/Phase2Audit.tsx` — website audit (PageSpeed + heuristics)
+  - `components/Phase3Rank.tsx` — scoring and ranking
+  - `components/Phase4Build.tsx` — AI prompt generator + live preview
+  - `components/Phase5Outreach.tsx` — WhatsApp/email/Instagram drafts
+  - `lib/types.ts` — shared types
+  - `lib/scoring.ts` — lead scoring algorithm
+- `artifacts/api-server/src/routes/scrape.ts` — worldwide search (OSM + optional Apify)
+- `artifacts/api-server/src/routes/audit.ts` — website audit (PageSpeed API + heuristics)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Frontend is a pure Vite + React SPA (no Next.js, no SSR); converted from the imported Next.js project
+- Search uses OpenStreetMap/Overpass API for free worldwide real data — no API key needed
+- Apify token (APIFY_TOKEN) enables Google Maps data when set; falls back to OSM gracefully
+- Google PageSpeed key (GOOGLE_PAGESPEED_KEY) enables real Lighthouse scores; falls back to heuristic estimates
+- Lead scoring is entirely client-side for instant re-ranking without server round-trips
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+5-phase pipeline for finding and pitching web development clients:
+1. **Scrape** — search any niche + city worldwide using real OpenStreetMap data
+2. **Audit** — check website quality, speed, mobile friendliness, gaps
+3. **Rank** — conversion score (0–100) based on site quality, reviews, reachability
+4. **Build** — AI prompt generator (Lovable / Bolt / Claude Code / Codex) + live iframe preview
+5. **Outreach** — WhatsApp, email, and Instagram messages in English or Hinglish
 
 ## User preferences
 
@@ -38,7 +53,11 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Leaflet CSS must be imported in `LeadMap.tsx` (not in global CSS) to avoid SSR issues
+- The Overpass API has rate limits; large counts (>20) may be slower
+- `APIFY_TOKEN` env var enables Google Maps crawler for richer data (rating, reviews)
+- `GOOGLE_PAGESPEED_KEY` env var enables real PageSpeed scores
+- Remove `postcss.config.mjs` from root — conflicts with Tailwind v4 `@tailwindcss/vite`
 
 ## Pointers
 
