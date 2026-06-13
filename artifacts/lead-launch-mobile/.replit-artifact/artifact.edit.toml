@@ -1,0 +1,20 @@
+kind = "expo"
+previewPath = "/mobile"
+title = "Lead → Launch Mobile"
+version = "1.0.0"
+id = "artifacts/lead-launch-mobile"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+name = "mobile"
+paths = ["/mobile"]
+localPort = 19006
+
+[services.development]
+run = "pnpm --filter @workspace/lead-launch-mobile run dev"
+
+[services.env]
+PORT = "19006"
