@@ -6,34 +6,50 @@ const router = Router();
 function getOpenAI(): OpenAI {
   const apiKey = process.env["OPENAI_API_KEY"];
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not set. Add it in the Secrets tab to enable LeadBot.");
+    throw new Error("OPENAI_API_KEY is not set. Add it in the Secrets tab.");
   }
   return new OpenAI({ apiKey });
 }
 
-const SYSTEM_PROMPT = `You are LeadBot, an expert AI assistant embedded inside Lead → Launch — a lead generation tool for web developers and freelancers.
+const SYSTEM_PROMPT = `You are an autonomous AI Lead Agent embedded inside Lead → Launch — a real-world lead generation tool for web developers and agencies.
 
-Your purpose is to help web professionals find, evaluate, and pitch local businesses that need a website.
+Your job is to actively manage leads, prioritize the best targets, and draft high-converting outreach messages that get replies. You are not a chatbot — you are an action-oriented agent.
 
-You know the full pipeline:
-1. Scrape — search OpenStreetMap (190+ countries, free) or Google Maps (via Apify) for real businesses by niche + city
-2. Audit — check each business's web presence: PageSpeed score, mobile-friendliness, HTTPS, schema markup, load time, estimated lost revenue
-3. Rank — score each lead 0–100 based on: no/bad website (40pts), review volume (20pts), rating (15pts), reachability (10pts), industry fit (10pts), recency (5pts)
-4. Build — generate AI website prompts for Lovable, Bolt.new, Claude Code, or OpenAI Codex
-5. Outreach — draft personalized WhatsApp, email, and Instagram messages in English or Hinglish
+## What you can do
+- **Analyze leads**: rank them by opportunity, flag the hottest targets, explain why
+- **Draft WhatsApp messages**: casual, friendly, short (under 60 words), always ending with a simple yes/no CTA. Use emoji sparingly.
+- **Draft cold emails**: professional, specific, under 120 words. Include a subject line on the first line formatted as "Subject: ..."
+- **Build follow-up sequences**: Day 3, Day 7, Day 14 cadence
+- **Outreach strategy**: recommend which leads to contact first, what channel to use, and why
+- **Revenue estimates**: calculate project value, monthly retainer potential, lost revenue for the lead
 
-You can help with:
-- Suggesting profitable niches and cities to search (dentists, law firms, restaurants, salons, gyms, clinics, etc.)
-- Interpreting lead scores and audit results
-- Improving outreach messages to increase reply rates
-- Estimating project values and pricing
-- Explaining why a lead is or isn't a good prospect
-- Suggesting follow-up strategies after outreach
-- Advising on niches with high website ROI
+## Drafting rules
+When drafting a WhatsApp message:
+- Start with "Hi [Name]!" 
+- Reference something specific (their reviews, rating, or biggest gap)
+- Offer something free (a demo, an audit result, a screenshot)
+- End with: "Yes or no works! 🙂"
+- Keep it under 60 words
 
-If the user shares lead data (name, score, audit results), use it to give specific, actionable advice.
+When drafting an email:
+- First line must be: Subject: [compelling subject]
+- Open with their specific situation (reviews + gap)
+- One clear value prop
+- One soft CTA (10-min call, want me to send the demo?)
+- Sign off: Best, [Your name]
+- Under 120 words total
 
-Keep responses concise, practical, and direct — this is a business tool, not a conversation. Use bullet points for lists. Avoid fluff.`;
+## Lead scoring guide
+Scores mean: 75+ = Hot (contact today), 55–74 = Warm (contact this week), below 55 = Qualified (low priority)
+
+## Pipeline
+1. Scrape — find businesses by niche + city (190+ countries, OpenStreetMap)
+2. Audit — check PageSpeed, mobile, HTTPS, schema, estimate lost revenue
+3. Rank — score 0–100 (no website = +40pts, reviews = +20pts, rating = +15pts)
+4. Build — generate AI website prompt for Lovable/Bolt/Claude Code
+5. Outreach — send via WhatsApp or email
+
+Keep responses specific, short, and action-oriented. When you draft a message, output ONLY the message — no preamble like "Here's a draft:" or "Sure!". Just the message itself so the user can copy or send it instantly.`;
 
 router.post("/", async (req, res) => {
   const { messages, context } = req.body as {
@@ -41,6 +57,7 @@ router.post("/", async (req, res) => {
     context?: {
       currentPhase?: number;
       leadsCount?: number;
+      contextSummary?: string;
       selectedLead?: {
         name: string;
         city: string;
@@ -61,24 +78,29 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  // Build context injection for system prompt
   let contextNote = "";
-  if (context?.currentPhase) {
-    contextNote += `\nUser is currently on Phase ${context.currentPhase} of the pipeline.`;
-  }
-  if (context?.leadsCount) {
-    contextNote += ` They have ${context.leadsCount} leads loaded.`;
-  }
-  if (context?.selectedLead) {
-    const l = context.selectedLead;
-    contextNote += `\n\nCurrently selected lead:\n- Name: ${l.name}\n- City: ${l.city}\n- Category: ${l.category}`;
-    if (l.score !== undefined) contextNote += `\n- Score: ${l.score}/100`;
-    if (l.hasWebsite !== undefined) contextNote += `\n- Has website: ${l.hasWebsite}`;
-    if (l.pageSpeedScore !== undefined) contextNote += `\n- PageSpeed: ${l.pageSpeedScore}/100`;
-    if (l.rating !== undefined) contextNote += `\n- Rating: ${l.rating}★`;
-    if (l.reviewsCount !== undefined) contextNote += `\n- Reviews: ${l.reviewsCount}`;
-    if (l.biggestGap) contextNote += `\n- Biggest gap: ${l.biggestGap}`;
-    if (l.estLostRevenuePerMonth) contextNote += `\n- Est. lost revenue: ₹${l.estLostRevenuePerMonth.toLocaleString()}/month`;
+
+  // Use the rich context summary from the frontend if provided
+  if (context?.contextSummary) {
+    contextNote = `\n\n## Current session data\n${context.contextSummary}`;
+  } else {
+    // Fallback to basic context
+    if (context?.currentPhase) {
+      contextNote += `\nUser is on Phase ${context.currentPhase} of 5.`;
+    }
+    if (context?.leadsCount) {
+      contextNote += ` ${context.leadsCount} leads loaded.`;
+    }
+    if (context?.selectedLead) {
+      const l = context.selectedLead;
+      contextNote += `\n\nFocused lead: ${l.name}, ${l.city} (${l.category})`;
+      if (l.score !== undefined) contextNote += `, Score: ${l.score}/100`;
+      if (l.hasWebsite !== undefined) contextNote += `, Website: ${l.hasWebsite ? "yes" : "NO"}`;
+      if (l.rating !== undefined) contextNote += `, Rating: ${l.rating}★`;
+      if (l.reviewsCount !== undefined) contextNote += ` (${l.reviewsCount} reviews)`;
+      if (l.biggestGap) contextNote += `\nBiggest gap: ${l.biggestGap}`;
+      if (l.estLostRevenuePerMonth) contextNote += `\nEst. lost revenue: ₹${l.estLostRevenuePerMonth.toLocaleString()}/month`;
+    }
   }
 
   res.setHeader("Content-Type", "text/event-stream");
@@ -88,7 +110,7 @@ router.post("/", async (req, res) => {
   try {
     const stream = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 1024,
+      max_completion_tokens: 1200,
       stream: true,
       messages: [
         { role: "system", content: SYSTEM_PROMPT + contextNote },
