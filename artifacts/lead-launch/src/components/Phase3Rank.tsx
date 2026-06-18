@@ -1,193 +1,174 @@
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PhaseShell } from "./PhaseShell";
 import { IncompleteState } from "./IncompleteState";
-import { Crown, IndianRupee, MessageCircle, Phone, Mail } from "lucide-react";
+import { Crown, IndianRupee, MessageCircle, Phone, Mail, Star, Globe, TrendingUp } from "lucide-react";
 import type { Lead, AuditResult, RankedLead } from "@/lib/types";
 import { scoreLead } from "@/lib/scoring";
 
-export function Phase3Rank({
-  leads,
-  audits,
-  selectedId,
-  setSelectedId,
-  onNext,
-  onPrev,
-}: {
-  leads: Lead[];
-  audits: Record<string, AuditResult>;
-  selectedId: string | null;
-  setSelectedId: (id: string | null) => void;
-  onNext: () => void;
-  onPrev: () => void;
+function ScoreBar({ score }: { score: number }) {
+  const color = score >= 75 ? "#10b981" : score >= 55 ? "#a78bfa" : "#fbbf24";
+  const bg = score >= 75 ? "rgba(16,185,129,0.15)" : score >= 55 ? "rgba(124,58,237,0.15)" : "rgba(251,191,36,0.12)";
+  const label = score >= 75 ? "HOT" : score >= 55 ? "WARM" : "COLD";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ flex: 1, height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${score}%`, background: `linear-gradient(90deg, ${color}, ${color}88)`, borderRadius: 3, transition: "width 0.7s ease-out", boxShadow: `0 0 6px ${color}60` }} />
+      </div>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.5px", color, minWidth: 28 }}>{score}</span>
+      <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 20, background: bg, color, border: `1px solid ${color}40`, fontWeight: 600, letterSpacing: "0.5px" }}>{label}</span>
+    </div>
+  );
+}
+
+export function Phase3Rank({ leads, audits, selectedId, setSelectedId, onNext, onPrev }: {
+  leads: Lead[]; audits: Record<string, AuditResult>; selectedId: string | null; setSelectedId: (id: string | null) => void; onNext: () => void; onPrev: () => void;
 }) {
-  const ranked: RankedLead[] = useMemo(() => {
-    return leads
-      .filter((l) => audits[l.id])
-      .map((l) => scoreLead(l, audits[l.id]))
-      .sort((a, b) => b.score - a.score);
-  }, [leads, audits]);
+  const ranked: RankedLead[] = useMemo(() =>
+    leads.filter(l => audits[l.id]).map(l => scoreLead(l, audits[l.id])).sort((a, b) => b.score - a.score),
+    [leads, audits]
+  );
 
   if (ranked.length === 0) {
     return (
-      <PhaseShell
-        title="Phase 3 — Ranked prospects"
-        subtitle="Conversion score blends site quality, review volume, rating, reachability, and industry fit. Pick one to build for."
-        onPrev={onPrev}
-        onNext={onNext}
-        nextDisabled
-        nextLabel="Build website"
-      >
-        <IncompleteState
-          title={leads.length === 0 ? "No leads scraped yet" : "No audits yet"}
-          description={
-            leads.length === 0
-              ? "Phases 1 and 2 haven't been run. After scraping leads and auditing them, this page ranks each by conversion potential."
-              : "Run an audit in Phase 2 first. Once leads have audits, we score and sort them by highest conversion potential."
-          }
-          prevPhaseLabel={leads.length === 0 ? "Scrape" : "Audit"}
-          onPrev={onPrev}
-        />
+      <PhaseShell title="Rank Prospects" subtitle="Leads are ranked 0–100 by website quality, reviews, rating, reachability, and niche fit." onPrev={onPrev} onNext={onNext} nextDisabled nextLabel="Build website">
+        <IncompleteState title={leads.length === 0 ? "No leads yet" : "No audits yet"} description={leads.length === 0 ? "Search for leads in Step 1, then audit them." : "Run the audit in Step 2 first."} prevPhaseLabel={leads.length === 0 ? "Find Leads" : "Audit"} onPrev={onPrev} />
       </PhaseShell>
     );
   }
 
+  const top3 = ranked.slice(0, 3);
+  const rankColors = ["#fbbf24", "#9ca3af", "#cd7c3f"];
+  const rankLabels = ["🥇 Best Lead", "🥈 Runner-up", "🥉 Third"];
+
   return (
-    <PhaseShell
-      title="Phase 3 — Ranked prospects"
-      subtitle="Conversion score blends site quality, review volume, rating, reachability, and industry fit. Pick one to build for."
-      onPrev={onPrev}
-      onNext={onNext}
-      nextDisabled={!selectedId}
-      nextLabel="Build website"
-    >
-      <div className="grid lg:grid-cols-3 gap-4 mb-4">
-        {ranked.slice(0, 3).map((lead, i) => (
-          <div key={lead.id}>
-            <Card
-              role="button"
-              tabIndex={0}
-              aria-pressed={selectedId === lead.id}
-              aria-label={`Select rank ${i + 1}: ${lead.name}`}
+    <PhaseShell title="Rank Prospects" subtitle={`${ranked.length} leads scored — sorted by conversion potential. Click a row to select a lead for site building.`} onPrev={onPrev} onNext={onNext} nextDisabled={!selectedId} nextLabel="Build website">
+
+      {/* Top 3 cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+        {top3.map((lead, i) => {
+          const sel = selectedId === lead.id;
+          const scoreColor = lead.score >= 75 ? "#10b981" : lead.score >= 55 ? "#a78bfa" : "#fbbf24";
+          return (
+            <button
+              key={lead.id}
               onClick={() => setSelectedId(lead.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setSelectedId(lead.id);
-                }
+              style={{
+                borderRadius: 14, textAlign: "left", padding: "18px 18px 16px", cursor: "pointer",
+                background: sel ? "rgba(124,58,237,0.12)" : "rgba(255,255,255,0.025)",
+                border: `1px solid ${sel ? "rgba(124,58,237,0.45)" : "rgba(255,255,255,0.07)"}`,
+                boxShadow: sel ? "0 0 24px rgba(124,58,237,0.15), inset 0 0 0 1px rgba(124,58,237,0.2)" : "none",
+                transition: "all 0.18s",
+                outline: "none",
               }}
-              className={`cursor-pointer transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:-translate-y-0.5 ${
-                selectedId === lead.id
-                  ? "ring-1 ring-primary border-primary/30"
-                  : "hover:border-primary/30"
-              }`}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2 font-medium tracking-wide uppercase text-muted-foreground">
-                    <Crown className="h-3.5 w-3.5 text-[color:var(--chart-4)]" strokeWidth={1.5} />
-                    Rank · {String(i + 1).padStart(2, "0")}
-                  </CardTitle>
-                  <div className="font-display text-3xl tabular-nums leading-none">{lead.score}</div>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: rankColors[i], letterSpacing: "0.3px" }}>{rankLabels[i]}</span>
+                <div style={{ fontSize: 26, fontWeight: 800, color: scoreColor, letterSpacing: "-1px", lineHeight: 1 }}>{lead.score}</div>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ll-text)", lineHeight: 1.3, marginBottom: 4 }}>{lead.name}</div>
+              <div style={{ fontSize: 11, color: "#4b5563", marginBottom: 10 }}>{lead.address}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                {lead.rating && <span style={{ fontSize: 11, color: "#fbbf24", display: "flex", alignItems: "center", gap: 3 }}><Star style={{ width: 11, height: 11, fill: "#fbbf24" }} />{lead.rating}</span>}
+                {lead.reviewsCount ? <span style={{ fontSize: 11, color: "#4b5563" }}>{lead.reviewsCount} reviews</span> : null}
+              </div>
+              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f87171" }}>₹{lead.audit.estLostRevenuePerMonth.toLocaleString()}</div>
+                  <div style={{ fontSize: 9, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 1 }}>Lost/mo</div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="font-medium text-base leading-snug">{lead.name}</div>
-                <div className="text-xs text-muted-foreground mt-1">{lead.address}</div>
-                <div className="mt-4 flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1">
-                    <IndianRupee className="h-3 w-3 text-muted-foreground" />
-                    {lead.audit.estLostRevenuePerMonth.toLocaleString()}/mo
-                  </span>
-                  {lead.reviewsCount && (
-                    <>
-                      <span className="text-border">·</span>
-                      <span className="text-muted-foreground">{lead.reviewsCount} reviews</span>
-                    </>
-                  )}
+                {lead.audit.hasWebsite && (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: lead.audit.pageSpeedScore >= 70 ? "#10b981" : lead.audit.pageSpeedScore >= 50 ? "#fbbf24" : "#f87171" }}>{lead.audit.pageSpeedScore}</div>
+                    <div style={{ fontSize: 9, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 1 }}>Speed</div>
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {lead.phone && <Phone style={{ width: 12, height: 12, color: "#10b981" }} />}
+                {lead.whatsapp && <MessageCircle style={{ width: 12, height: 12, color: "#a78bfa" }} />}
+                {lead.email && <Mail style={{ width: 12, height: 12, color: "#06b6d4" }} />}
+                {!lead.audit.hasWebsite && <Globe style={{ width: 12, height: 12, color: "#f87171" }} />}
+              </div>
+              {sel && (
+                <div style={{ marginTop: 10, padding: "4px 10px", borderRadius: 20, background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.4)", fontSize: 10, fontWeight: 600, color: "#c4b5fd", textAlign: "center" }}>
+                  ✓ Selected for building
                 </div>
-                <div className="mt-3 flex gap-1.5">
-                  {lead.phone && <Phone className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />}
-                  {lead.whatsapp && <MessageCircle className="h-3.5 w-3.5 text-[color:var(--accent-foreground)]" strokeWidth={1.5} />}
-                  {lead.email && <Mail className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ))}
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All ranked</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10">#</TableHead>
-                  <TableHead>Business</TableHead>
-                  <TableHead className="w-[260px]">Score</TableHead>
-                  <TableHead>Lost / mo</TableHead>
-                  <TableHead>Site</TableHead>
-                  <TableHead className="text-right">Select</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ranked.map((lead, i) => (
-                  <tr
-                    key={lead.id}
-                    aria-selected={selectedId === lead.id}
-                    className={`border-b border-border cursor-pointer transition-colors duration-150 hover:bg-muted/40 ${selectedId === lead.id ? "bg-primary/5" : ""}`}
-                    onClick={() => setSelectedId(lead.id)}
-                  >
-                    <TableCell className="font-medium tabular-nums">{i + 1}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{lead.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {lead.reviewsCount ? `${lead.reviewsCount} reviews` : "No reviews"}
-                        {lead.rating ? ` · ${lead.rating}★` : ""}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="relative h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full bg-primary transition-[width] duration-700 ease-out" style={{ width: `${lead.score}%` }} />
-                        </div>
-                        <span className="font-mono text-sm tabular-nums w-9 text-right">{lead.score}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono tabular-nums text-sm">{lead.audit.estLostRevenuePerMonth.toLocaleString()}</TableCell>
-                    <TableCell>
-                      {lead.audit.hasWebsite ? (
-                        <Badge variant="secondary" className="text-xs font-normal">{lead.audit.pageSpeedScore} PageSpeed</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs font-normal text-destructive border-destructive/40 bg-destructive/5">None</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant={selectedId === lead.id ? "default" : "outline"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedId(lead.id);
-                        }}
-                      >
-                        {selectedId === lead.id ? "Selected" : "Select"}
-                      </Button>
-                    </TableCell>
-                  </tr>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Full ranked table */}
+      <div className="glow-card" style={{ overflow: "hidden" }}>
+        <div style={{ padding: "14px 18px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
+          <TrendingUp style={{ width: 15, height: 15, color: "#a78bfa" }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ll-text)" }}>All {ranked.length} prospects ranked</span>
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              {["#", "Business", "Score", "Lost/mo", "Site", ""].map(h => (
+                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, color: "#374151", textTransform: "uppercase", letterSpacing: "0.7px", fontWeight: 600 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {ranked.map((lead, i) => {
+              const sel = selectedId === lead.id;
+              return (
+                <tr
+                  key={lead.id}
+                  onClick={() => setSelectedId(lead.id)}
+                  style={{
+                    borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer",
+                    background: sel ? "rgba(124,58,237,0.08)" : "transparent",
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "rgba(124,58,237,0.04)"; }}
+                  onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                >
+                  <td style={{ padding: "12px 14px", fontSize: 12, fontWeight: 700, color: "#4b5563" }}>
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                  </td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ll-text)" }}>{lead.name}</div>
+                    <div style={{ fontSize: 11, color: "#4b5563", marginTop: 2 }}>
+                      {lead.reviewsCount ? `${lead.reviewsCount} reviews` : "No reviews"}
+                      {lead.rating ? ` · ${lead.rating}★` : ""}
+                    </div>
+                  </td>
+                  <td style={{ padding: "12px 14px", minWidth: 180 }}>
+                    <ScoreBar score={lead.score} />
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 600, color: "#f87171" }}>
+                    ₹{lead.audit.estLostRevenuePerMonth.toLocaleString()}
+                  </td>
+                  <td style={{ padding: "12px 14px" }}>
+                    {lead.audit.hasWebsite
+                      ? <span style={{ fontSize: 10, padding: "3px 9px", borderRadius: 20, background: "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)" }}>{lead.audit.pageSpeedScore} score</span>
+                      : <span style={{ fontSize: 10, padding: "3px 9px", borderRadius: 20, background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" }}>No site</span>
+                    }
+                  </td>
+                  <td style={{ padding: "12px 14px", textAlign: "right" }}>
+                    <button
+                      onClick={e => { e.stopPropagation(); setSelectedId(lead.id); }}
+                      style={{
+                        height: 30, padding: "0 14px", borderRadius: 7, border: "none", fontWeight: 600, fontSize: 11, cursor: "pointer",
+                        background: sel ? "linear-gradient(135deg, #7c3aed, #6d28d9)" : "rgba(255,255,255,0.05)",
+                        color: sel ? "white" : "#6b7280",
+                        boxShadow: sel ? "0 2px 8px rgba(124,58,237,0.3)" : "none",
+                      }}
+                    >
+                      {sel ? "✓ Selected" : "Select"}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </PhaseShell>
   );
 }

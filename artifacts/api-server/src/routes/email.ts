@@ -10,12 +10,23 @@ type EmailPayload = {
   leadName?: string;
 };
 
+type SmtpConfig = {
+  host: string;
+  port?: string | number;
+  user: string;
+  pass: string;
+  from?: string;
+};
+
+// In-memory SMTP config (overrides env vars when set via UI)
+let runtimeSmtp: SmtpConfig | null = null;
+
 function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM ?? user;
+  const host = runtimeSmtp?.host ?? process.env.SMTP_HOST;
+  const port = Number(runtimeSmtp?.port ?? process.env.SMTP_PORT ?? 587);
+  const user = runtimeSmtp?.user ?? process.env.SMTP_USER;
+  const pass = runtimeSmtp?.pass ?? process.env.SMTP_PASS;
+  const from = runtimeSmtp?.from ?? process.env.SMTP_FROM ?? user;
 
   if (!host || !user || !pass) return null;
 
@@ -32,11 +43,33 @@ function createTransport() {
 
 router.get("/status", (_req, res) => {
   const configured = !!(
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS
+    (runtimeSmtp?.host && runtimeSmtp?.user && runtimeSmtp?.pass) ||
+    (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
   );
   res.json({ configured });
+});
+
+router.post("/configure", async (req, res) => {
+  const { host, port, user, pass, from } = req.body as SmtpConfig;
+  if (!host || !user || !pass) {
+    res.status(400).json({ error: "host, user, and pass are required" });
+    return;
+  }
+  // Quick connectivity test
+  try {
+    const transport = nodemailer.createTransport({
+      host,
+      port: Number(port ?? 587),
+      secure: Number(port ?? 587) === 465,
+      auth: { user, pass },
+    });
+    await transport.verify();
+    runtimeSmtp = { host, port, user, pass, from };
+    res.json({ success: true, message: "SMTP configured and verified" });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "SMTP verification failed";
+    res.status(400).json({ error: msg });
+  }
 });
 
 router.post("/send", async (req, res) => {
@@ -56,7 +89,7 @@ router.post("/send", async (req, res) => {
   const mailerConfig = createTransport();
   if (!mailerConfig) {
     res.status(503).json({
-      error: "Email not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables.",
+      error: "Email not configured. Click 'Setup Email' in the Outreach step to enter your SMTP credentials.",
       configured: false,
     });
     return;
@@ -68,7 +101,7 @@ router.post("/send", async (req, res) => {
       to,
       subject,
       text: body,
-      html: body.replace(/\n/g, "<br/>"),
+      html: `<div style="font-family:sans-serif;max-width:600px;line-height:1.6">${body.replace(/\n/g, "<br/>")}</div>`,
     });
 
     res.json({

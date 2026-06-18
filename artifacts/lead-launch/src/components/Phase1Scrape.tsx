@@ -1,325 +1,283 @@
 import { useState, Suspense, lazy } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhaseShell } from "./PhaseShell";
-import { Loader2, MapPin, Phone, Star, Globe, MessageCircle, Mail, Search } from "lucide-react";
+import { Loader2, MapPin, Phone, Star, Globe, MessageCircle, Mail, Search, Zap } from "lucide-react";
 import type { Lead, ScrapeInput } from "@/lib/types";
 import { toast } from "sonner";
 
 const LeadMap = lazy(() => import("./LeadMap"));
-
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const POPULAR_NICHES = [
-  "Dentist", "Salon & Beauty", "Restaurant", "Gym & Fitness", "Cafe",
-  "Lawyer", "Hotel", "Clinic / Doctor", "Pharmacy", "School / Coaching",
-  "Real Estate", "Bakery", "Jewellery", "Electronics Shop", "Auto Repair",
-  "Florist", "Photographer", "Travel Agency", "Tailor", "Supermarket",
-];
+const QUICK_NICHES = ["Dentist", "Salon", "Restaurant", "Gym", "Cafe", "Lawyer", "Hotel", "Clinic", "Pharmacy", "Coaching", "Real Estate", "Bakery"];
+const QUICK_LOCATIONS = ["Mumbai, India", "Delhi, India", "Bangalore, India", "London, UK", "Dubai, UAE", "New York, USA", "Singapore", "Toronto, Canada"];
 
-function Stat({ label, value, color }: { label: string; value: number; color?: string }) {
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className="text-center px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
-      <div className="font-bold text-xl tabular-nums" style={{ color: color ?? "var(--ll-text)" }}>{value}</div>
-      <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mt-0.5">{label}</div>
+    <div style={{
+      flex: 1, textAlign: "center", padding: "10px 8px", borderRadius: 10,
+      background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)",
+    }}>
+      <div style={{ fontSize: 20, fontWeight: 700, color, letterSpacing: "-0.5px" }}>{value}</div>
+      <div style={{ fontSize: 9, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.7px", marginTop: 2 }}>{label}</div>
     </div>
   );
 }
 
-export function Phase1Scrape({
-  leads,
-  setLeads,
-  onNext,
-  onPrev,
-}: {
-  leads: Lead[];
-  setLeads: (l: Lead[]) => void;
-  onNext: () => void;
-  onPrev?: () => void;
+export function Phase1Scrape({ leads, setLeads, onNext, onPrev }: {
+  leads: Lead[]; setLeads: (l: Lead[]) => void; onNext: () => void; onPrev?: () => void;
 }) {
   const [input, setInput] = useState<ScrapeInput>({ niche: "Dentist", city: "Mumbai, India", count: 15 });
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<string | null>(null);
 
   async function runScrape() {
-    if (!input.niche.trim() || !input.city.trim()) {
-      toast.error("Please enter both a business type and a location.");
-      return;
-    }
-    setLoading(true);
-    setLeads([]);
-    setSource(null);
+    if (!input.niche.trim() || !input.city.trim()) { toast.error("Enter a business type and location."); return; }
+    setLoading(true); setLeads([]); setSource(null);
     try {
-      const res = await fetch(`${BASE}/api/scrape`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(input),
-      });
+      const res = await fetch(`${BASE}/api/scrape`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "Scrape failed");
       for (let i = 0; i < data.leads.length; i++) {
-        await new Promise((r) => setTimeout(r, 60));
+        await new Promise(r => setTimeout(r, 55));
         setLeads(data.leads.slice(0, i + 1));
       }
       setSource(data.source);
-      const sourceLabel = data.source === "apify" ? "Google Maps" : "OpenStreetMap";
-      toast.success(`${data.leads.length} leads found via ${sourceLabel}`);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
+      toast.success(`${data.leads.length} businesses found!`);
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setLoading(false); }
   }
+
+  const withPhone = leads.filter(l => l.phone).length;
+  const noSite = leads.filter(l => !l.website).length;
+  const withEmail = leads.filter(l => l.email).length;
 
   return (
     <PhaseShell
-      title="Phase 1 — Find Leads"
-      subtitle="Search businesses worldwide by niche and location — enter any city, district, state, or country. We pull real data from OpenStreetMap's 600M+ business nodes."
-      onPrev={onPrev}
-      onNext={onNext}
-      nextDisabled={leads.length === 0}
-      nextLabel="Audit these leads →"
+      title="Find Leads"
+      subtitle="Search any niche worldwide — enter a city, district, state, or whole country. Powered by OpenStreetMap's 600M+ business nodes."
+      onPrev={onPrev} onNext={onNext} nextDisabled={leads.length === 0} nextLabel="Audit these leads"
     >
-      <div className="grid md:grid-cols-3 gap-5">
-        {/* Search Form */}
-        <Card className="md:col-span-1 border-[rgba(108,99,255,0.15)]">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(108,99,255,0.15)", border: "0.5px solid rgba(108,99,255,0.3)" }}>
-                <Search className="h-3.5 w-3.5 text-primary" />
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20 }}>
+
+        {/* ── SEARCH PANEL ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Search card */}
+          <div className="glow-card" style={{ padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(124,58,237,0.18)", border: "1px solid rgba(124,58,237,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Search style={{ width: 13, height: 13, color: "#a78bfa" }} />
               </div>
-              Search Parameters
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="niche" className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Business Type / Niche</Label>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ll-text)" }}>Search Parameters</span>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <Label style={{ fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.9px", fontWeight: 600 }}>Business Type</Label>
               <Input
-                id="niche"
-                autoComplete="off"
                 value={input.niche}
-                onChange={(e) => setInput({ ...input, niche: e.target.value })}
-                placeholder="e.g. Dentist, Salon, Gym"
-                className="h-10 text-sm"
+                onChange={e => setInput({ ...input, niche: e.target.value })}
+                placeholder="e.g. Dentist, Salon, Cafe"
+                style={{ marginTop: 6, height: 40, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ll-text)", fontSize: 13 }}
               />
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {POPULAR_NICHES.slice(0, 8).map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setInput({ ...input, niche: n })}
-                    className="text-[10px] px-2 py-0.5 rounded-full transition-colors"
-                    style={{
-                      background: input.niche === n ? "rgba(108,99,255,0.2)" : "rgba(255,255,255,0.04)",
-                      border: `0.5px solid ${input.niche === n ? "rgba(108,99,255,0.4)" : "rgba(255,255,255,0.08)"}`,
-                      color: input.niche === n ? "#A78BFA" : "#8B8BAD",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {n}
-                  </button>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                {QUICK_NICHES.map(n => (
+                  <button key={n} onClick={() => setInput({ ...input, niche: n })} style={{
+                    fontSize: 10, padding: "3px 9px", borderRadius: 20, cursor: "pointer",
+                    background: input.niche === n ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${input.niche === n ? "rgba(124,58,237,0.5)" : "rgba(255,255,255,0.07)"}`,
+                    color: input.niche === n ? "#c4b5fd" : "#4b5563",
+                    transition: "all 0.12s",
+                  }}>{n}</button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city" className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                Location <span className="normal-case text-[10px] text-muted-foreground/60">(city / district / state / country)</span>
+            <div style={{ marginBottom: 14 }}>
+              <Label style={{ fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.9px", fontWeight: 600 }}>
+                Location <span style={{ fontSize: 9, color: "#374151", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(city / district / state / country)</span>
               </Label>
               <Input
-                id="city"
-                autoComplete="off"
                 value={input.city}
-                onChange={(e) => setInput({ ...input, city: e.target.value })}
-                placeholder="e.g. Bandra Mumbai, Gujarat, London, Japan"
-                className="h-10 text-sm"
+                onChange={e => setInput({ ...input, city: e.target.value })}
+                placeholder="e.g. Mumbai, Gujarat, London, Japan"
+                style={{ marginTop: 6, height: 40, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ll-text)", fontSize: 13 }}
               />
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Works for any location worldwide — neighbourhood, city, district, state, or entire country.
-              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                {QUICK_LOCATIONS.map(loc => (
+                  <button key={loc} onClick={() => setInput({ ...input, city: loc })} style={{
+                    fontSize: 10, padding: "3px 8px", borderRadius: 20, cursor: "pointer",
+                    background: input.city === loc ? "rgba(6,182,212,0.15)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${input.city === loc ? "rgba(6,182,212,0.4)" : "rgba(255,255,255,0.06)"}`,
+                    color: input.city === loc ? "#67e8f9" : "#4b5563",
+                    transition: "all 0.12s",
+                  }}>{loc}</button>
+                ))}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="count" className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Number of Results</Label>
-              <Select
-                value={String(input.count)}
-                onValueChange={(v) => setInput({ ...input, count: Number(v) })}
-              >
-                <SelectTrigger id="count" className="h-10 text-sm font-mono">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[5, 10, 15, 20, 30, 50].map((n) => (
-                    <SelectItem key={n} value={String(n)}>{n} leads</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div style={{ marginBottom: 16 }}>
+              <Label style={{ fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.9px", fontWeight: 600 }}>Max Results</Label>
+              <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                {[5, 10, 15, 20, 30, 50].map(n => (
+                  <button key={n} onClick={() => setInput({ ...input, count: n })} style={{
+                    flex: 1, padding: "6px 0", borderRadius: 7, cursor: "pointer", fontSize: 11, fontWeight: 600,
+                    background: input.count === n ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${input.count === n ? "rgba(124,58,237,0.5)" : "rgba(255,255,255,0.06)"}`,
+                    color: input.count === n ? "#c4b5fd" : "#4b5563",
+                    transition: "all 0.12s",
+                  }}>{n}</button>
+                ))}
+              </div>
             </div>
 
-            <Button
+            <button
               onClick={runScrape}
               disabled={loading}
-              className="w-full h-11 font-semibold transition-all duration-150 active:scale-[0.98]"
+              style={{
+                width: "100%", height: 44, borderRadius: 10, border: "none", fontWeight: 700,
+                fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                background: loading ? "rgba(124,58,237,0.2)" : "linear-gradient(135deg, #7c3aed, #6d28d9)",
+                color: loading ? "#4b5563" : "white",
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: loading ? "none" : "0 4px 16px rgba(124,58,237,0.35)",
+                transition: "all 0.15s",
+              }}
             >
               {loading
-                ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Searching...</>
-                : <><Search className="h-4 w-4 mr-2" /> Find Leads</>
+                ? <><Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> Searching…</>
+                : <><Zap style={{ width: 15, height: 15 }} /> Find Leads</>
               }
-            </Button>
+            </button>
 
             {source && (
-              <p className="text-center text-[10px] text-muted-foreground">
-                Source: {source === "apify" ? "🗺 Google Maps (Apify)" : "🗺 OpenStreetMap"}
+              <p style={{ textAlign: "center", fontSize: 10, color: "#374151", marginTop: 8 }}>
+                {source === "apify" ? "📍 Via Google Maps (Apify)" : "🗺 Via OpenStreetMap"}
               </p>
             )}
+          </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <Stat label="Found" value={leads.length} color="#A78BFA" />
-              <Stat label="Phone" value={leads.filter((l) => l.phone).length} color="#34D399" />
-              <Stat label="No Site" value={leads.filter((l) => !l.website).length} color="#FCA5A5" />
+          {/* Live stats */}
+          <div style={{ display: "flex", gap: 8 }}>
+            <StatPill label="Found" value={leads.length} color="#a78bfa" />
+            <StatPill label="Phone" value={withPhone} color="#10b981" />
+            <StatPill label="No site" value={noSite} color="#fbbf24" />
+          </div>
+
+          {withEmail > 0 && (
+            <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.2)", fontSize: 12, color: "#67e8f9", display: "flex", alignItems: "center", gap: 8 }}>
+              <Mail style={{ width: 13, height: 13, flexShrink: 0 }} />
+              <span>{withEmail} lead{withEmail > 1 ? "s" : ""} with email address found</span>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
 
-        {/* Map + Results */}
-        <div className="md:col-span-2 space-y-4">
+        {/* ── RESULTS PANEL ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Map */}
           <Suspense fallback={
-            <div className="h-[300px] rounded-xl border border-dashed border-border flex items-center justify-center text-sm text-muted-foreground">
-              Loading map...
+            <div style={{ height: 280, borderRadius: 14, border: "1px dashed rgba(124,58,237,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151", fontSize: 13 }}>
+              Loading map…
             </div>
           }>
             <LeadMap leads={leads} />
           </Suspense>
 
-          {leads.length > 0 && (
-            <Card className="border-[rgba(108,99,255,0.15)]">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">{leads.length} leads found</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px]">
-                      {leads.filter((l) => !l.website).length} without website
-                    </Badge>
-                    <Badge variant="secondary" className="text-[10px]">
-                      {leads.filter((l) => l.phone || l.email).length} contactable
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="pl-4">Business</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Website</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {leads.map((lead) => (
-                        <TableRow key={lead.id} className="hover:bg-white/[0.02]">
-                          <TableCell className="pl-4">
-                            <div className="font-medium text-sm">{lead.name}</div>
-                            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                              <MapPin className="h-3 w-3 shrink-0" />
-                              <span className="truncate max-w-[180px]">{lead.address}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-xs font-normal capitalize">
-                              {lead.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              {lead.phone && (
-                                <span title={lead.phone}>
-                                  <Phone className="h-3.5 w-3.5 text-green-400" strokeWidth={1.5} />
-                                </span>
-                              )}
-                              {lead.whatsapp && (
-                                <span title="WhatsApp">
-                                  <MessageCircle className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} />
-                                </span>
-                              )}
-                              {lead.email && (
-                                <span title={lead.email}>
-                                  <Mail className="h-3.5 w-3.5 text-blue-400" strokeWidth={1.5} />
-                                </span>
-                              )}
-                              {!lead.phone && !lead.email && (
-                                <span className="text-xs text-muted-foreground">—</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {lead.rating ? (
-                              <span className="flex items-center gap-1 text-sm">
-                                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                <span className="font-medium">{lead.rating}</span>
-                                {lead.reviewsCount ? (
-                                  <span className="text-muted-foreground text-xs">({lead.reviewsCount})</span>
-                                ) : null}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {lead.website ? (
-                              <a
-                                href={lead.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs text-primary hover:underline"
-                              >
-                                <Globe className="h-3 w-3" /> Visit
-                              </a>
-                            ) : (
-                              <Badge variant="outline" className="text-xs font-normal text-red-400 border-red-400/30">
-                                No site
-                              </Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
+          {/* Empty state */}
           {leads.length === 0 && !loading && (
-            <Card className="border-dashed border-[rgba(108,99,255,0.2)]">
-              <CardContent className="py-14 text-center">
-                <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center" style={{ background: "rgba(108,99,255,0.1)", border: "0.5px solid rgba(108,99,255,0.2)" }}>
-                  <Search className="h-5 w-5 text-primary/60" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Ready to search</p>
-                <p className="text-xs text-muted-foreground/60 max-w-xs mx-auto">
-                  Enter a business type and any location — city, district, state, or country — then click <strong>Find Leads</strong>.
-                </p>
-              </CardContent>
-            </Card>
+            <div style={{ borderRadius: 14, border: "1px dashed rgba(124,58,237,0.18)", padding: "48px 24px", textAlign: "center" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+                <Search style={{ width: 20, height: 20, color: "#a78bfa" }} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", margin: "0 0 6px" }}>Ready to search</p>
+              <p style={{ fontSize: 12, color: "#374151", maxWidth: 300, margin: "0 auto" }}>Pick a niche and location, then click <strong style={{ color: "#a78bfa" }}>Find Leads</strong></p>
+            </div>
           )}
 
+          {/* Loading skeleton */}
           {loading && (
-            <Card className="border-dashed border-[rgba(108,99,255,0.2)]">
-              <CardContent className="py-14 text-center">
-                <Loader2 className="h-7 w-7 mx-auto mb-3 animate-spin text-primary/60" />
-                <p className="text-sm text-muted-foreground">Searching {input.city} for {input.niche} businesses…</p>
-                <p className="text-xs text-muted-foreground/50 mt-1">Larger areas (states, countries) may take a few seconds</p>
-              </CardContent>
-            </Card>
+            <div style={{ borderRadius: 14, border: "1px dashed rgba(124,58,237,0.18)", padding: "48px 24px", textAlign: "center" }}>
+              <Loader2 style={{ width: 28, height: 28, margin: "0 auto 12px", color: "#7c3aed", animation: "spin 1s linear infinite" }} />
+              <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 4px" }}>Searching {input.city}…</p>
+              <p style={{ fontSize: 11, color: "#374151" }}>Large areas (states/countries) may take a few seconds</p>
+            </div>
+          )}
+
+          {/* Results table */}
+          {leads.length > 0 && (
+            <div className="glow-card" style={{ overflow: "hidden" }}>
+              <div style={{ padding: "14px 18px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ll-text)" }}>
+                  {leads.length} businesses found
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>
+                    {noSite} no website
+                  </span>
+                  <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.2)" }}>
+                    {withPhone} contactable
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      {["Business", "Category", "Contact", "Rating", "Website"].map(h => (
+                        <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.7px", fontWeight: 600 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leads.map((lead, i) => (
+                      <tr key={lead.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.12s" }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(124,58,237,0.05)"}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                      >
+                        <td style={{ padding: "11px 14px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ll-text)" }}>{lead.name}</div>
+                          <div style={{ fontSize: 11, color: "#4b5563", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                            <MapPin style={{ width: 10, height: 10 }} />
+                            <span style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "11px 14px" }}>
+                          <span style={{ fontSize: 10, padding: "3px 9px", borderRadius: 20, background: "rgba(167,139,250,0.1)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.2)", textTransform: "capitalize" }}>
+                            {lead.category}
+                          </span>
+                        </td>
+                        <td style={{ padding: "11px 14px" }}>
+                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            {lead.phone && <Phone style={{ width: 13, height: 13, color: "#10b981" }} title={lead.phone} />}
+                            {lead.whatsapp && <MessageCircle style={{ width: 13, height: 13, color: "#7c3aed" }} title="WhatsApp" />}
+                            {lead.email && <Mail style={{ width: 13, height: 13, color: "#06b6d4" }} title={lead.email} />}
+                            {!lead.phone && !lead.email && <span style={{ fontSize: 11, color: "#374151" }}>—</span>}
+                          </div>
+                        </td>
+                        <td style={{ padding: "11px 14px" }}>
+                          {lead.rating ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <Star style={{ width: 12, height: 12, color: "#fbbf24", fill: "#fbbf24" }} />
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ll-text)" }}>{lead.rating}</span>
+                              {lead.reviewsCount && <span style={{ fontSize: 10, color: "#4b5563" }}>({lead.reviewsCount})</span>}
+                            </div>
+                          ) : <span style={{ fontSize: 11, color: "#374151" }}>—</span>}
+                        </td>
+                        <td style={{ padding: "11px 14px" }}>
+                          {lead.website ? (
+                            <a href={lead.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "#06b6d4", display: "flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
+                              <Globe style={{ width: 11, height: 11 }} /> Visit
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: 10, padding: "3px 9px", borderRadius: 20, background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}>No site</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       </div>
