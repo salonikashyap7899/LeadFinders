@@ -9,7 +9,7 @@ import { Phase5Outreach } from "@/components/Phase5Outreach";
 import { AIAgent } from "@/components/AIAgent";
 import { scoreLead } from "@/lib/scoring";
 import type { Lead, AuditResult, RankedLead } from "@/lib/types";
-import { Zap, Search, BarChart2, TrendingUp, Code2, MessageSquare, Bot, ChevronLeft, CheckCircle } from "lucide-react";
+import { Zap, Search, BarChart2, TrendingUp, Code2, MessageSquare, Bot, CheckCircle } from "lucide-react";
 
 const STEPS = [
   { n: 1, label: "Scrape", icon: Search, desc: "Find businesses" },
@@ -18,17 +18,6 @@ const STEPS = [
   { n: 4, label: "Build", icon: Code2, desc: "Generate prompt" },
   { n: 5, label: "Outreach", icon: MessageSquare, desc: "Send messages" },
 ];
-
-const BG = "#0A0B14";
-const BG2 = "#12142A";
-const BG3 = "#1A1D35";
-const ACCENT = "#6C63FF";
-const ACCENT2 = "#A78BFA";
-const GREEN = "#34D399";
-const TEXT = "#F4F4FF";
-const MUTED = "#8B8BAD";
-const BORDER = "rgba(255,255,255,0.07)";
-const ACCENT_BORDER = "rgba(108,99,255,0.2)";
 
 export default function App() {
   const [phase, setPhase] = useState<number | "agent">(1);
@@ -62,33 +51,26 @@ export default function App() {
   const currentPhaseNum = phase === "agent" ? 0 : phase;
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: BG, color: TEXT, fontFamily: "Inter, system-ui, sans-serif", overflow: "hidden" }}>
+    <div className="flex h-screen bg-background text-foreground overflow-hidden" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{
-        width: 220,
-        flexShrink: 0,
-        background: BG2,
-        borderRight: `0.5px solid ${BORDER}`,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}>
+      <aside className="w-[220px] shrink-0 flex flex-col overflow-hidden border-r" style={{ background: "var(--ll-bg2)", borderColor: "rgba(255,255,255,0.06)" }}>
+
         {/* Logo */}
-        <div style={{ padding: "18px 16px 14px", borderBottom: `0.5px solid ${BORDER}` }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Zap style={{ width: 15, height: 15, color: "white" }} strokeWidth={2.5} />
+        <div className="px-4 py-[18px] border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+          <Link to="/" className="flex items-center gap-2.5 no-underline">
+            <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 bg-primary">
+              <Zap className="w-[15px] h-[15px] text-white" strokeWidth={2.5} />
             </div>
-            <span style={{ fontSize: 15, fontWeight: 700, color: TEXT, letterSpacing: "-0.3px" }}>
-              Lead<span style={{ color: ACCENT2 }}>→</span>Launch
+            <span className="text-[15px] font-bold text-foreground tracking-[-0.3px]">
+              Lead<span className="text-[#A78BFA]">→</span>Launch
             </span>
           </Link>
         </div>
 
         {/* Pipeline steps */}
-        <div style={{ padding: "14px 10px 8px" }}>
-          <div style={{ fontSize: 10, color: MUTED, letterSpacing: "0.8px", textTransform: "uppercase", padding: "0 6px 8px" }}>Pipeline</div>
+        <div className="px-2.5 pt-3.5 pb-2">
+          <div className="text-[10px] text-muted-foreground tracking-[0.8px] uppercase px-1.5 pb-2">Pipeline</div>
           {STEPS.map(({ n, label, icon: Icon, desc }) => {
             const done = completed.has(n);
             const active = phase === n;
@@ -98,109 +80,83 @@ export default function App() {
                 key={n}
                 onClick={() => canJump && setPhase(n)}
                 disabled={!canJump}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-lg mb-0.5 text-left transition-all duration-150"
                 style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  padding: "8px 8px",
-                  borderRadius: 8,
-                  marginBottom: 2,
-                  background: active ? `rgba(108,99,255,0.14)` : "transparent",
-                  border: active ? `0.5px solid ${ACCENT_BORDER}` : "0.5px solid transparent",
-                  color: active ? ACCENT2 : done ? GREEN : canJump ? MUTED : "rgba(139,139,173,0.35)",
+                  background: active ? "rgba(108,99,255,0.14)" : "transparent",
+                  border: `0.5px solid ${active ? "rgba(108,99,255,0.25)" : "transparent"}`,
+                  color: active ? "#A78BFA" : done ? "#34D399" : canJump ? "#8B8BAD" : "rgba(139,139,173,0.3)",
                   cursor: canJump ? "pointer" : "not-allowed",
-                  textAlign: "left",
-                  transition: "all 0.15s",
                 }}
               >
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                  background: active ? "rgba(108,99,255,0.2)" : done ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.04)",
-                  border: `0.5px solid ${active ? ACCENT_BORDER : done ? "rgba(52,211,153,0.25)" : BORDER}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                <div className="w-7 h-7 rounded-[7px] shrink-0 flex items-center justify-center" style={{
+                  background: active ? "rgba(108,99,255,0.2)" : done ? "rgba(52,211,153,0.1)" : "rgba(255,255,255,0.04)",
+                  border: `0.5px solid ${active ? "rgba(108,99,255,0.3)" : done ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.07)"}`,
                 }}>
                   {done && !active
-                    ? <CheckCircle style={{ width: 12, height: 12, color: GREEN }} />
-                    : <Icon style={{ width: 12, height: 12 }} />
+                    ? <CheckCircle className="w-3 h-3 text-[#34D399]" />
+                    : <Icon className="w-3 h-3" />
                   }
                 </div>
-                <div>
-                  <div style={{ fontSize: 12.5, fontWeight: active ? 600 : 500, lineHeight: 1 }}>{label}</div>
-                  <div style={{ fontSize: 10, color: active ? ACCENT2 : MUTED, marginTop: 2, opacity: 0.7 }}>{desc}</div>
+                <div className="min-w-0">
+                  <div className="text-[12.5px] font-medium leading-none">{label}</div>
+                  <div className="text-[10px] mt-0.5 opacity-60 leading-none">{desc}</div>
                 </div>
                 {done && !active && (
-                  <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: GREEN, flexShrink: 0 }} />
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#34D399] shrink-0" />
                 )}
               </button>
             );
           })}
         </div>
 
-        <div style={{ margin: "4px 10px 8px", height: "0.5px", background: BORDER }} />
+        <div className="mx-2.5 my-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
-        {/* AI Agent tab */}
-        <div style={{ padding: "0 10px" }}>
-          <div style={{ fontSize: 10, color: MUTED, letterSpacing: "0.8px", textTransform: "uppercase", padding: "0 6px 8px" }}>Tools</div>
+        {/* AI Agent */}
+        <div className="px-2.5">
+          <div className="text-[10px] text-muted-foreground tracking-[0.8px] uppercase px-1.5 pb-2">Tools</div>
           <button
             onClick={() => setPhase("agent")}
+            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-left transition-all duration-150"
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 9,
-              padding: "8px 8px",
-              borderRadius: 8,
               background: phase === "agent" ? "rgba(108,99,255,0.14)" : "transparent",
-              border: phase === "agent" ? `0.5px solid ${ACCENT_BORDER}` : "0.5px solid transparent",
-              color: phase === "agent" ? ACCENT2 : MUTED,
+              border: `0.5px solid ${phase === "agent" ? "rgba(108,99,255,0.25)" : "transparent"}`,
+              color: phase === "agent" ? "#A78BFA" : "#8B8BAD",
               cursor: "pointer",
-              textAlign: "left",
-              transition: "all 0.15s",
             }}
           >
-            <div style={{
-              width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+            <div className="w-7 h-7 rounded-[7px] shrink-0 flex items-center justify-center relative" style={{
               background: phase === "agent" ? "rgba(108,99,255,0.2)" : "rgba(255,255,255,0.04)",
-              border: `0.5px solid ${phase === "agent" ? ACCENT_BORDER : BORDER}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              position: "relative",
+              border: `0.5px solid ${phase === "agent" ? "rgba(108,99,255,0.3)" : "rgba(255,255,255,0.07)"}`,
             }}>
-              <Bot style={{ width: 12, height: 12 }} />
-              <span style={{
-                position: "absolute", top: -3, right: -3, width: 8, height: 8,
-                borderRadius: "50%", background: GREEN,
-                border: `1.5px solid ${BG2}`,
-              }} />
+              <Bot className="w-3 h-3" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#34D399]" style={{ border: "1.5px solid var(--ll-bg2)" }} />
             </div>
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: phase === "agent" ? 600 : 500, lineHeight: 1 }}>AI Agent</div>
-              <div style={{ fontSize: 10, color: phase === "agent" ? ACCENT2 : MUTED, marginTop: 2, opacity: 0.7 }}>Manage & message leads</div>
+            <div className="min-w-0">
+              <div className="text-[12.5px] font-medium leading-none">AI Agent</div>
+              <div className="text-[10px] mt-0.5 opacity-60 leading-none">Manage & message leads</div>
             </div>
           </button>
         </div>
 
         {/* Stats footer */}
-        <div style={{ marginTop: "auto", padding: "12px 16px", borderTop: `0.5px solid ${BORDER}` }}>
-          <div style={{ display: "flex", gap: 12, justifyContent: "space-between" }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>{leads.length}</div>
-              <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 1 }}>Leads</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: ACCENT2 }}>{Object.keys(audits).length}</div>
-              <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 1 }}>Audited</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: GREEN }}>{rankedLeads.length > 0 ? rankedLeads[0].score : "—"}</div>
-              <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 1 }}>Top Score</div>
-            </div>
+        <div className="mt-auto px-4 py-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { val: leads.length, label: "Leads", color: "var(--ll-text)" },
+              { val: Object.keys(audits).length, label: "Audited", color: "#A78BFA" },
+              { val: rankedLeads.length > 0 ? rankedLeads[0].score : "—", label: "Top", color: "#34D399" },
+            ].map(({ val, label, color }) => (
+              <div key={label} className="text-center">
+                <div className="text-base font-bold" style={{ color }}>{val}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-[0.5px] mt-0.5">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <main style={{ flex: 1, overflow: "auto", background: BG, minHeight: 0 }}>
+      <main className="flex-1 overflow-auto min-h-0 grid-bg">
         {phase === "agent" ? (
           <AIAgent
             leads={leads}
@@ -209,23 +165,22 @@ export default function App() {
             phase={currentPhaseNum}
           />
         ) : (
-          <div style={{ padding: "28px 32px 80px" }}>
-            {/* Phase header bar */}
-            <div style={{ marginBottom: 28, display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ display: "flex", gap: 6 }}>
+          <div className="px-8 pt-7 pb-20">
+            {/* Progress bar */}
+            <div className="mb-7 flex items-center gap-3">
+              <div className="flex gap-1.5">
                 {STEPS.map(({ n }) => {
                   const done = completed.has(n);
                   const active = phase === n;
                   return (
-                    <div key={n} style={{
-                      width: active ? 24 : 8, height: 4, borderRadius: 4,
-                      background: active ? ACCENT : done ? GREEN : "rgba(255,255,255,0.1)",
-                      transition: "all 0.3s",
+                    <div key={n} className="h-1 rounded-full transition-all duration-300" style={{
+                      width: active ? 24 : 8,
+                      background: active ? "var(--ll-accent)" : done ? "#34D399" : "rgba(255,255,255,0.1)",
                     }} />
                   );
                 })}
               </div>
-              <span style={{ fontSize: 12, color: MUTED }}>
+              <span className="text-xs text-muted-foreground">
                 Step {phase} of 5 — {STEPS[(phase as number) - 1]?.label}
               </span>
             </div>
