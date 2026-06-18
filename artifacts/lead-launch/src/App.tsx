@@ -203,13 +203,28 @@ export default function App() {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <main style={{ flex: 1, overflow: "auto", background: "var(--ll-bg)" }} className="grid-bg">
+      <main
+        style={{
+          flex: 1,
+          overflow: phase === 1 ? "hidden" : "auto",
+          background: "var(--ll-bg)",
+          display: "flex",
+          flexDirection: "column",
+        }}
+        className="grid-bg"
+      >
         {phase === "agent" ? (
           <AIAgent leads={leads} rankedLeads={rankedLeads} selectedLead={selectedRanked} phase={0} />
         ) : (
-          <div style={{ padding: "28px 32px 100px" }}>
+          <div style={{
+            padding: phase === 1 ? "16px 24px 12px" : "28px 32px 100px",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+          }}>
             {/* Top step progress */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: phase === 1 ? 12 : 28, flexShrink: 0 }}>
               <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                 {STEPS.map(({ n }) => {
                   const done = completed.has(n);
@@ -232,7 +247,11 @@ export default function App() {
               </span>
             </div>
 
-            {phase === 1 && <Phase1Scrape key="p1" leads={leads} setLeads={setLeads} onNext={() => setPhase(2)} />}
+            {phase === 1 && (
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <Phase1Scrape key="p1" leads={leads} setLeads={setLeads} onNext={() => setPhase(2)} />
+              </div>
+            )}
             {phase === 2 && <Phase2Audit key="p2" leads={leads} audits={audits} setAudits={setAudits} onNext={() => setPhase(3)} onPrev={() => setPhase(1)} />}
             {phase === 3 && <Phase3Rank key="p3" leads={leads} audits={audits} selectedId={selectedId} setSelectedId={setSelectedId} onNext={() => setPhase(4)} onPrev={() => setPhase(2)} />}
             {phase === 4 && <Phase4Build key="p4" selected={selectedRanked} onNext={() => setPhase(5)} onPrev={() => setPhase(3)} />}
