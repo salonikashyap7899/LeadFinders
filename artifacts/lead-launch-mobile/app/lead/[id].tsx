@@ -20,7 +20,7 @@ export default function LeadDetailScreen() {
   const audit = lead && audits[lead.id];
   const ranked = lead && audit ? scoreLead(lead, audit) : null;
 
-  if (!lead || !ranked) {
+  if (!lead || !audit || !ranked) {
     return (
       <View style={[styles.empty, { backgroundColor: colors.background }]}>
         <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Lead not found</Text>
