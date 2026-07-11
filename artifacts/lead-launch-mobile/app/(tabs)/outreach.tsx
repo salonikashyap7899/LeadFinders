@@ -45,7 +45,8 @@ export default function OutreachScreen() {
     );
   }
 
-  const { first, followUp } = buildOutreach(selectedRanked, channel, lang);
+  const lead = selectedRanked;
+  const { first, followUp } = buildOutreach(lead, channel, lang);
 
   async function copyText(text: string) {
     await Clipboard.setStringAsync(text);
@@ -53,13 +54,13 @@ export default function OutreachScreen() {
   }
 
   async function sendOutreach() {
-    if (channel === "whatsapp" && selectedRanked.whatsapp) {
-      const num = selectedRanked.whatsapp.replace(/\D/g, "");
+    if (channel === "whatsapp" && lead.whatsapp) {
+      const num = lead.whatsapp.replace(/\D/g, "");
       Linking.openURL(`https://wa.me/${num}?text=${encodeURIComponent(first)}`);
-    } else if (channel === "email" && selectedRanked.email) {
+    } else if (channel === "email" && lead.email) {
       const subject = encodeURIComponent("Built a website demo for your business");
       const body = encodeURIComponent(first);
-      Linking.openURL(`mailto:${selectedRanked.email}?subject=${subject}&body=${body}`);
+      Linking.openURL(`mailto:${lead.email}?subject=${subject}&body=${body}`);
     } else if (channel === "instagram") {
       Linking.openURL("https://instagram.com/");
     } else {
@@ -94,7 +95,7 @@ export default function OutreachScreen() {
           </Text>
         </View>
         <View style={styles.langRow}>
-          <Text style={[styles.langLabel, { color: selectedRanked.mutedForeground ?? colors.mutedForeground }]}>EN</Text>
+          <Text style={[styles.langLabel, { color: colors.mutedForeground }]}>EN</Text>
           <Switch
             value={lang === "hinglish"}
             onValueChange={(v) => setLang(v ? "hinglish" : "english")}
@@ -200,6 +201,11 @@ function MessageCard({
 }
 
 const styles = StyleSheet.create({
+  empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10, paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", marginTop: 6 },
+  emptyText: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center" },
+  goBtn: { paddingHorizontal: 20, paddingVertical: 11, marginTop: 10 },
+  goBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   content: { paddingHorizontal: 16 },
   recipientRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 },
   avatar: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },

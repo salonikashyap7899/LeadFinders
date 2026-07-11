@@ -67,10 +67,7 @@ function getDeploymentDomain() {
     return stripProtocol(process.env.EXPO_PUBLIC_DOMAIN);
   }
 
-  console.error(
-    "ERROR: No deployment domain found. Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, or EXPO_PUBLIC_DOMAIN",
-  );
-  process.exit(1);
+  return null;
 }
 
 function prepareDirectories(timestamp) {
@@ -511,6 +508,13 @@ async function main() {
   setupSignalHandlers();
 
   const domain = getDeploymentDomain();
+  if (!domain) {
+    console.warn(
+      "Skipping static Expo Go build: no deployment domain found. " +
+        "Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, or EXPO_PUBLIC_DOMAIN to enable it.",
+    );
+    process.exit(0);
+  }
   const expoPublicReplId = getExpoPublicReplId();
   const baseUrl = `https://${domain}`;
   const timestamp = `${Date.now()}-${process.pid}`;

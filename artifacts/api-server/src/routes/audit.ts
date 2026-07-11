@@ -38,7 +38,12 @@ async function pagespeed(url: string, key: string): Promise<{ score: number; loa
     const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&category=PERFORMANCE&key=${key}`;
     const res = await fetch(endpoint);
     if (!res.ok) return { score: 0, loadTimeMs: 0 };
-    const j = await res.json();
+    const j = (await res.json()) as {
+      lighthouseResult?: {
+        categories?: { performance?: { score?: number } };
+        audits?: Record<string, { numericValue?: number }>;
+      };
+    };
     const score = Math.round((j.lighthouseResult?.categories?.performance?.score ?? 0) * 100);
     const lcp = j.lighthouseResult?.audits?.["largest-contentful-paint"]?.numericValue ?? 0;
     return { score, loadTimeMs: Math.round(lcp) };
