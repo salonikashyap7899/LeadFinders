@@ -10,6 +10,6 @@
 // `src/index.ts` (which calls `app.listen`) is only used for long-running
 // environments like Replit; on Vercel the exported app acts as the request
 // handler instead.
-import app from "../artifacts/api-server/src/app";
+import app from "../artifacts/api-server/src/app.js";
 
 export default app;
