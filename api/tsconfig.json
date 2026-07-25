@@ -1,0 +1,20 @@
+{
+  "//": "Config used ONLY by Vercel's @vercel/node when the project Root Directory is the repository root and it compiles the combined-deploy function entry (api/index.ts). It sits next to the entry so it is discovered first. rootDir spans the repo so the cross-package import into artifacts/api-server/src is allowed, and emit is never skipped on error.",
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../.vercel-api-dist",
+    "noEmit": false,
+    "noEmitOnError": false,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "composite": false,
+    "incremental": false
+  },
+  "include": [
+    "**/*.ts",
+    "../artifacts/api-server/src/**/*.ts",
+    "../lib/api-zod/src/**/*.ts"
+  ]
+}
