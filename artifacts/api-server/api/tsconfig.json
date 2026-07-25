@@ -1,0 +1,14 @@
+{
+  "//": "Config used ONLY by Vercel's @vercel/node when compiling the serverless function entry (api/index.ts). It is discovered before ../tsconfig.json because it sits next to the entry. The main tsconfig scopes rootDir to src/ (for the Replit build), which excludes this api/ file and makes @vercel/node skip emit; here we widen rootDir to the package root and never skip emit on error so the function compiles.",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../dist-vercel",
+    "noEmitOnError": false,
+    "composite": false,
+    "incremental": false,
+    "tsBuildInfoFile": null
+  },
+  "include": ["**/*.ts", "../src/**/*.ts"],
+  "references": []
+}
