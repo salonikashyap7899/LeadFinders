@@ -5,6 +5,9 @@ dist
 dist-vercel
 .vercel-api-dist
 .vercel
+# generated Vercel serverless function bundle (built by artifacts/api-server/build-vercel.mjs)
+/api/index.mjs
+/api/index.mjs.map
 tmp
 out-tsc
 *.tsbuildinfo
