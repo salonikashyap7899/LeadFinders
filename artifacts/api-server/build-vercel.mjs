@@ -22,7 +22,10 @@ import { build as esbuild } from "esbuild";
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(artifactDir, "..", "..");
 const outDir = path.resolve(repoRoot, "api");
-const outFile = path.resolve(outDir, "index.mjs");
+// Committed entry (api/index.mjs) re-exports this generated, self-contained
+// bundle. The entry is committed so Vercel registers the serverless function;
+// the heavy bundle is generated here at build time and git-ignored.
+const outFile = path.resolve(outDir, "_app.mjs");
 const entryFile = path.resolve(outDir, "_entry.serverless.ts");
 
 async function buildVercelFunction() {
